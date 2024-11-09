@@ -1,26 +1,40 @@
 const {Envelope, envelopes} = require('./../models/envelopeModel');
+const EnvelopeTable = require('./../models/envelopeTable');
 
 class EnvelopeService {
+    static getAllEnvelopes = async () => {
+        return await EnvelopeTable.getAllEnvelopes();
+    }
+
     /**
      * @param {string} category
-     * @returns {Envelope}
+     * @returns {Promise<Envelope>}
      */
-    static getEnvelopeByCategory = (category) => {
-        const foundEnvelope = envelopes.find(envelope => envelope.category === category);
+    static getEnvelopeByCategory = async (category) => {
+        const foundEnvelope = await EnvelopeTable.getEnvelopeByCategory(category);
 
         if (foundEnvelope) {
-            return foundEnvelope;
+            const envelope = Envelope.fromDatabaseFormat(foundEnvelope);
+            return envelope;
         } else {
             throw new Error('Envelope with given category not found');
         }
     }
 
-    static deleteEnvelopeByCategory = (category) => {
-        const index = envelopes.findIndex(envelope => envelope.category === category);
-        if (index === -1) {
-            throw new Error('Can not find an envelope with given category');
+    /**
+     * 
+     * @param {string} category 
+     * @returns {Promise<boolean>}
+     */
+    static deleteEnvelopeByCategory = async (category) => {
+        const findResponse = await EnvelopeTable.getEnvelopeByCategory(category)
+        if (!findResponse) {
+            throw new Error('Can not find envelope with given category');
         }
-        envelopes.splice(index, 1);
+        const deleteResponse = await EnvelopeTable.deleteEnvelopeById(findResponse['id']);
+        if (!deleteResponse) {
+            throw new Error('Can not delete envelope with given category');
+        }
     }
 
     /**
@@ -28,9 +42,9 @@ class EnvelopeService {
      * @param {Envelope} envelope 
      * @param {Number} sum 
      * @param {'add'|'extract'} action 
-     * @returns {Envelope}
+     * @returns {Promise<Envelope>}
      */
-    static changeMoneyInEnvelope = (envelope, sum, action) => {
+    static changeMoneyInEnvelope = async (envelope, sum, action) => {
         const currentAmount = envelope.moneyAmount;
         let newAmount;
         if (action === 'add') {
@@ -48,7 +62,28 @@ class EnvelopeService {
         }
 
         envelope.moneyAmount = newAmount;
-        return envelope;
+        const response = await EnvelopeTable.updateEnvelopeMoneyAmount(envelope);
+        const updatedEnvelope = Envelope.fromDatabaseFormat(response);
+        return updatedEnvelope;
+    }
+
+    /**
+     * 
+     * @param {Envelope} envelope 
+     * @param {Number} id
+     * @returns {Promise<object>} updated row from database
+     */
+    static updateEnvelopeInDatabase = async (envelope, id) => {
+        const updatedEnvelope = await EnvelopeTable.updateEnvelope(envelope, id);
+        return updatedEnvelope;
+    }
+
+    /**
+     * 
+     * @param {Envelope} envelope 
+     */
+    static saveNewEnvelope = async (envelope) => {
+        return await EnvelopeTable.saveNewEnvelope(envelope);
     }
 }
 
