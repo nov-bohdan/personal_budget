@@ -14,8 +14,7 @@ class EnvelopeService {
         const foundEnvelope = await EnvelopeTable.getEnvelopeByCategory(category);
 
         if (foundEnvelope) {
-            const envelope = Envelope.fromDatabaseFormat(foundEnvelope);
-            return envelope;
+            return foundEnvelope;
         } else {
             throw new Error('Envelope with given category not found');
         }
@@ -63,8 +62,7 @@ class EnvelopeService {
 
         envelope.moneyAmount = newAmount;
         const response = await EnvelopeTable.updateEnvelopeMoneyAmount(envelope);
-        const updatedEnvelope = Envelope.fromDatabaseFormat(response);
-        return updatedEnvelope;
+        return response;
     }
 
     /**

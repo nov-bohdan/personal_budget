@@ -28,25 +28,11 @@ class Envelope {
         if (newAmount < 0) {
             throw new Error('newAmount can\'t be less than 0');
         }
-        if (newAmount instanceof Number) {
+        if (typeof newAmount !== 'integer') {
             throw new Error('newAmount must be integer');
         }
         this._moneyAmount = newAmount;
         return true;
-    }
-
-    /**
-     * 
-     * @param {object} object row from database
-     * @returns {Envelope}
-     */
-    static fromDatabaseFormat(object) {
-        return new Envelope({
-            category: object['category'],
-            budget: parseFloat(object['budget']),
-            moneyAmount: parseFloat(object['money_amount']),
-            id: object['id']
-        });
     }
 }
 

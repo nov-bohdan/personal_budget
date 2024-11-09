@@ -1,6 +1,6 @@
-const {Envelope, envelopes} = require('./../models/envelopeModel');
+const {Envelope} = require('./../models/envelopeModel');
 const EnvelopeService = require('./../services/envelopeService');
-const {ValidationError, validateEnvelopeData, validatePositiveNumber} = require('./../utils/validationHelper');
+const {validateEnvelopeData, validatePositiveNumber} = require('./../utils/validationHelper');
 
 class EnvelopeController {
     static getAllEnvelopes = async (req, res) => {
@@ -10,14 +10,7 @@ class EnvelopeController {
     static getEnvelopeByCategory = async (req, res) => {
         let envelopeCategory;
         try {
-            if (req.query.category) {
-                envelopeCategory = req.query.category.toString();
-            } else {
-                return res.status(400).json({
-                    error: 'No category provided in the request',
-                    data: req.body
-                });
-            }
+            envelopeCategory = req.query.category.toString();
             const envelope = await EnvelopeService.getEnvelopeByCategory(envelopeCategory);
             res.status(200).json(envelope);
         } catch (err) {
@@ -30,16 +23,6 @@ class EnvelopeController {
     }
 
     static createEnvelope = async (req, res) => {
-        const { category, budget, moneyAmount } = req.body;
-
-        const validationErrors = validateEnvelopeData({category, budget, moneyAmount});
-        if (validationErrors.length > 0) {
-            return res.status(400).json({
-                error: 'Validation failed',
-                data: validationErrors
-            });
-        }
-
         const envelope = new Envelope({
             category,
             budget,
@@ -54,13 +37,6 @@ class EnvelopeController {
         const { category, sum, action } = req.body;
         let envelope;
         try {
-            validatePositiveNumber(sum, 'sum');
-            if (!(action === 'add' || action === 'extract')) {
-                return res.status(400).json({
-                    error: 'Invalid action',
-                    data: {category, envelope, sum, action}
-                });
-            }
             envelope = await EnvelopeService.getEnvelopeByCategory(category);
             envelope = await EnvelopeService.changeMoneyInEnvelope(envelope, sum, action);
             res.status(200).json({status: 'Success'});
