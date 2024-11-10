@@ -1,4 +1,4 @@
-const {Envelope, envelopes} = require('./../models/envelopeModel');
+const {Envelope} = require('./../models/envelopeModel');
 const EnvelopeTable = require('./../models/envelopeTable');
 
 class EnvelopeService {

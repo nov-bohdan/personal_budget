@@ -28,7 +28,7 @@ class Envelope {
         if (newAmount < 0) {
             throw new Error('newAmount can\'t be less than 0');
         }
-        if (typeof newAmount !== 'integer') {
+        if (typeof newAmount !== 'number') {
             throw new Error('newAmount must be integer');
         }
         this._moneyAmount = newAmount;
