@@ -68,17 +68,6 @@ class EnvelopeService {
     /**
      * 
      * @param {Envelope} envelope 
-     * @param {Number} id
-     * @returns {Promise<object>} updated row from database
-     */
-    static updateEnvelopeInDatabase = async (envelope, id) => {
-        const updatedEnvelope = await EnvelopeTable.updateEnvelope(envelope, id);
-        return updatedEnvelope;
-    }
-
-    /**
-     * 
-     * @param {Envelope} envelope 
      */
     static saveNewEnvelope = async (envelope) => {
         return await EnvelopeTable.saveNewEnvelope(envelope);
