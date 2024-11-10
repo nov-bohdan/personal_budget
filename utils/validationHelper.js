@@ -1,3 +1,5 @@
+const Joi = require('joi');
+
 class ValidationError extends Error {
     constructor(message) {
         super(message);
@@ -24,7 +26,8 @@ const validateEnvelopeData = ({category, budget, moneyAmount}) => {
 }
 
 const validatePositiveNumber = (value, fieldName) => {
-    if (typeof value !== 'number' || isNaN(value) || value <= 0) {
+    const {error} = joiSchemas.positiveNumber.validate(value);
+    if (error) {
         throw new ValidationError(`${fieldName} must be a positive number`);
     }
 }
@@ -35,9 +38,16 @@ const validateEnvelope = (envelope) => {
     }
 }
 
+const joiSchemas = {
+    category: Joi.string().min(1),
+    envelopeAction: Joi.string().pattern(/^(add|extract)$/),
+    positiveNumber: Joi.number().positive()
+}
+
 module.exports = {
     ValidationError,
     validateEnvelopeData,
     validatePositiveNumber,
-    validateEnvelope
+    validateEnvelope,
+    joiSchemas
 }

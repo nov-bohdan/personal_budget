@@ -1,5 +1,6 @@
 const {Envelope} = require('./../models/envelopeModel');
 const EnvelopeTable = require('./../models/envelopeTable');
+const {joiSchemas} = require('./../utils/validationHelper');
 
 class EnvelopeService {
     static getAllEnvelopes = async () => {
@@ -11,8 +12,10 @@ class EnvelopeService {
      * @returns {Promise<Envelope>}
      */
     static getEnvelopeByCategory = async (category) => {
-        const foundEnvelope = await EnvelopeTable.getEnvelopeByCategory(category);
+        const {error} = joiSchemas.category.validate(category);
+        if (error) throw error;
 
+        const foundEnvelope = await EnvelopeTable.getEnvelopeByCategory(category);
         if (foundEnvelope) {
             return foundEnvelope;
         } else {
@@ -26,14 +29,18 @@ class EnvelopeService {
      * @returns {Promise<boolean>}
      */
     static deleteEnvelopeByCategory = async (category) => {
+        const {error} = joiSchemas.category.validate(category);
+        if (error) throw error;
+
         const findResponse = await EnvelopeTable.getEnvelopeByCategory(category)
         if (!findResponse) {
             throw new Error('Can not find envelope with given category');
         }
-        const deleteResponse = await EnvelopeTable.deleteEnvelopeById(findResponse['id']);
+        const deleteResponse = await EnvelopeTable.deleteEnvelopeById(findResponse.id);
         if (!deleteResponse) {
             throw new Error('Can not delete envelope with given category');
         }
+        return true
     }
 
     /**
@@ -46,6 +53,10 @@ class EnvelopeService {
     static changeMoneyInEnvelope = async (envelope, sum, action) => {
         const currentAmount = envelope.moneyAmount;
         let newAmount;
+
+        const {error} = joiSchemas.envelopeAction.validate(action);
+        if (error) throw error;
+
         if (action === 'add') {
             newAmount = envelope.moneyAmount + sum;
             if (newAmount > envelope.budget) {
@@ -54,15 +65,12 @@ class EnvelopeService {
         } else if (action === 'extract') {
             newAmount = currentAmount - sum;
             if (newAmount < 0) {
-                throw new Error('newAmount must be equal or greater than 0');
+                throw new Error('Insufficient funds: cannot have a negative balance');
             }
-        } else {
-            throw new Error(`Invalid action provided: ${action}`);
         }
 
         envelope.moneyAmount = newAmount;
-        const response = await EnvelopeTable.updateEnvelopeMoneyAmount(envelope);
-        return response;
+        return await EnvelopeTable.updateEnvelopeMoneyAmount(envelope);
     }
 
     /**

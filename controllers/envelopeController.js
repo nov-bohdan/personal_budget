@@ -15,7 +15,7 @@ class EnvelopeController {
             console.log(err.stack);
             res.status(404).json({
                 status: 'Error',
-                error: err.message,
+                error: `${err.name}: ${err.message}`,
                 data: {envelopeCategory}
             });
         }
@@ -44,29 +44,34 @@ class EnvelopeController {
             console.log(err.stack);
             res.status(400).json({
                 status: 'Error',
-                error: err.message,
+                error: `${err.name}: ${err.message}`,
                 data: {category, envelope, sum, action}
             });
         }
     }
 
     static deleteEnvelopeByCategory = async (req, res) => {
+        let category;
         try {
-            const category = req.query.category?.toString();
+            category = req.query.category?.toString();
             if (!category) {
                 return res.status(400).json({
                     error: 'No category provided in the request',
                     data: req.body
                 });
             }
-            await EnvelopeService.deleteEnvelopeByCategory(category);
-            res.status(200).json({
-                status: 'Success'
-            });
+            const result = await EnvelopeService.deleteEnvelopeByCategory(category);
+            if (result) {
+                res.status(200).json({
+                    status: 'Success'
+                });
+            } else {
+                throw new Error('Unsuccesfull deleting');
+            }
         } catch (err) {
             res.status(400).json({
                 status: 'Error',
-                error: err.message,
+                error: `${err.name}: ${err.message}`,
                 data: {category}
             });   
         }
@@ -91,7 +96,7 @@ class EnvelopeController {
         } catch (err) {
             res.status(400).json({
                 status: 'Error',
-                error: err.message,
+                error: `${err.name}: ${err.message}`,
                 data: req.body
             });  
         }

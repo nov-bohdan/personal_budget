@@ -13,6 +13,9 @@ class EnvelopeTable {
     static async getEnvelopeByCategory(category) {
         const response = await db.pool.query(`SELECT * FROM envelopes
             WHERE category = $1`, [category]);
+        if (response.rowCount === 0) {
+            throw new Error('Envelope with this category not found');
+        }
         return this.fromDatabaseFormat(response.rows[0]);
     }
 
@@ -41,10 +44,10 @@ class EnvelopeTable {
         console.log(`Deleting id ${id}`);
         const response = await db.pool.query(`DELETE FROM envelopes
             WHERE id=$1`, [id]);
-        if (response.rowCount !== 0) {
-            return true;
-        } else {
+        if (response.rowCount === 0) {
             return false;
+        } else {
+            return true;
         }
     }
 

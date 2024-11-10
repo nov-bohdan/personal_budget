@@ -2,7 +2,7 @@ const express = require('express');
 const envelopeRouter = express.Router();
 const morgan = require('morgan');
 const EnvelopeController = require('../controllers/envelopeController');
-const {validateEnvelopeData, validatePositiveNumber} = require('./../utils/validationHelper');
+const {validateEnvelopeData, validatePositiveNumber, joiSchemas} = require('./../utils/validationHelper');
 
 envelopeRouter.use(express.json());
 envelopeRouter.use(morgan('short'));
@@ -22,11 +22,13 @@ const sumValidator = (req, res, next) => {
 
 const actionValidator = (req, res, next) => {
     const { action } = req.body;
-    if (!(action === 'add' || action === 'extract')) {
+    const {error} = joiSchemas.envelopeAction.validate(action);
+    if (error) {
         return res.status(400).json({
-            error: 'Invalid action',
-            data: req.body
-        });
+            status: 'Error',
+            error: error.details[0].message,
+            data: {action}
+        })
     }
     next();
 }
